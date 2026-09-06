@@ -1,0 +1,30 @@
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+  <div class="card shadow-sm p-4" style="max-width: 380px; width: 100%;">
+    <h3 class="mb-3 text-center">Crear compte</h3>
+
+    <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <input type="text" class="form-control" name="name" [(ngModel)]="name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Correu electrònic</label>
+        <input type="email" class="form-control" name="email" [(ngModel)]="email" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contrasenya</label>
+        <input type="password" class="form-control" name="password" [(ngModel)]="password" required minlength="6">
+      </div>
+
+      <div class="alert alert-danger py-2" *ngIf="error">{{ error }}</div>
+
+      <button type="submit" class="btn btn-warning w-100" [disabled]="registerForm.invalid || loading">
+        {{ loading ? 'Creant compte...' : 'Crear compte' }}
+      </button>
+    </form>
+
+    <p class="text-center text-muted mt-3 mb-0">
+      Ja tens compte? <a routerLink="/login">Inicia sessió</a>
+    </p>
+  </div>
+</div>

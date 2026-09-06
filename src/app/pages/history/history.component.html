@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container py-4" style="max-width: 700px;">
+        <h3 class="mb-4">📊 Historial</h3>
+
+        <p class="text-muted" *ngIf="months.length === 0">Encara no hi ha historial de mesos anteriors.</p>
+
+        <div class="card shadow-sm p-3 mb-3" *ngFor="let month of months">
+            <h5>{{ month }}</h5>
+            <table class="table table-sm mb-0">
+                <tbody>
+                    <tr *ngFor="let e of entriesForMonth(month)">
+                        <td>{{ e.category_name }}</td>
+                        <td class="text-end">
+                            {{ e.total_spent | number:'1.2-2' }} € / {{ e.limit_amount | number:'1.2-2' }} €
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
