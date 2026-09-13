@@ -8,7 +8,7 @@ import { BudgetService, HistoryEntry } from '../../services/budget.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './history.component.html',
-  styles: './history.components.scss'
+  styleUrl: './history.components.scss'
 })
 export class HistoryComponent implements OnInit {
   entries: HistoryEntry[] = [];
