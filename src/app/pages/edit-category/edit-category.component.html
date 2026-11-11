@@ -1,0 +1,31 @@
+<app-navbar />
+
+<div class="container pb-4" style="max-width: 500px;">
+  <a routerLink="/dashboard" class="btn btn-link px-0 mb-2">← Tornar</a>
+
+  <div class="card shadow-sm p-4">
+    <h4 class="mb-3">Editar categoria</h4>
+
+    <p class="text-muted mb-0" *ngIf="loading">Carregant...</p>
+
+    <form *ngIf="!loading" [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="mb-3">
+        <label class="form-label" for="name">Nom</label>
+        <input id="name" type="text" class="form-control" formControlName="name"
+          [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid">
+        <div class="invalid-feedback">El nom és obligatori (màxim 100 caràcters).</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="limit">Límit (€)</label>
+        <input id="limit" type="number" class="form-control" formControlName="limit_amount" step="0.01" min="0"
+          [class.is-invalid]="form.controls.limit_amount.touched && form.controls.limit_amount.invalid">
+        <div class="invalid-feedback">El límit ha de ser major que 0.</div>
+      </div>
+
+      <button type="submit" class="btn btn-warning w-100" [disabled]="saving">
+        {{ saving ? 'Desant...' : 'Desar canvis' }}
+      </button>
+    </form>
+  </div>
+</div>

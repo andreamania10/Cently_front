@@ -1,32 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
+<app-navbar />
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+<div class="container pb-4" style="max-width: 700px;">
+  <h3 class="mb-4">📊 Historial</h3>
 
-<body>
-    <div class="container py-4" style="max-width: 700px;">
-        <h3 class="mb-4">📊 Historial</h3>
+  <p class="text-muted" *ngIf="loading">Carregant...</p>
 
-        <p class="text-muted" *ngIf="months.length === 0">Encara no hi ha historial de mesos anteriors.</p>
+  <p class="text-muted" *ngIf="!loading && months.length === 0">
+    Encara no hi ha despeses registrades.
+  </p>
 
-        <div class="card shadow-sm p-3 mb-3" *ngFor="let month of months">
-            <h5>{{ month }}</h5>
-            <table class="table table-sm mb-0">
-                <tbody>
-                    <tr *ngFor="let e of entriesForMonth(month)">
-                        <td>{{ e.category_name }}</td>
-                        <td class="text-end">
-                            {{ e.total_spent | number:'1.2-2' }} € / {{ e.limit_amount | number:'1.2-2' }} €
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+  <div class="card shadow-sm p-3 mb-3" *ngFor="let month of months">
+    <div class="d-flex justify-content-between align-items-baseline mb-2">
+      <h5 class="mb-0">{{ monthLabel(month) }}</h5>
+      <span class="text-muted small">Total: {{ totalForMonth(month) | number:'1.2-2' }} €</span>
     </div>
-</body>
-
-</html>
+    <table class="table table-sm mb-0">
+      <tbody>
+        <tr *ngFor="let e of entriesForMonth(month)">
+          <td>{{ e.category_name }}</td>
+          <td class="text-end" [class.text-danger]="e.total_spent > e.limit_amount">
+            {{ e.total_spent | number:'1.2-2' }} € / {{ e.limit_amount | number:'1.2-2' }} €
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

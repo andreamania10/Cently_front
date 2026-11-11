@@ -1,0 +1,73 @@
+<app-navbar />
+
+<div class="container pb-4" style="max-width: 820px;">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <h3 class="mb-0">📈 Anàlisi de despeses</h3>
+    <div>
+      <label class="form-label small text-muted mb-1" for="period">Període</label>
+      <select id="period" class="form-select form-select-sm" style="min-width: 200px;"
+        [(ngModel)]="selectedMonth" (ngModelChange)="load()" [disabled]="loading">
+        <option value="all">Tot l'historial</option>
+        <option *ngFor="let m of months" [value]="m">{{ monthLabel(m) }}</option>
+      </select>
+    </div>
+  </div>
+
+  <p class="text-muted" *ngIf="loading && !data">Generant l'anàlisi...</p>
+
+  <ng-container *ngIf="data">
+    <p class="text-muted" *ngIf="data.categories.length === 0">
+      No hi ha despeses en aquest període.
+    </p>
+
+    <ng-container *ngIf="data.categories.length > 0">
+      <div class="row g-3 mb-3" [class.opacity-50]="loading">
+        <div class="col-sm-6">
+          <div class="card shadow-sm p-3 h-100">
+            <span class="text-muted small">Total gastat</span>
+            <span class="fs-3 fw-semibold">{{ data.total | number:'1.2-2' }} €</span>
+          </div>
+        </div>
+        <div class="col-sm-6" *ngIf="topCategory as top">
+          <div class="card shadow-sm p-3 h-100">
+            <span class="text-muted small">On has gastat més</span>
+            <span class="fs-3 fw-semibold">{{ top.category }}</span>
+            <span class="text-muted small">{{ top.pct | number:'1.1-1' }}% del total · {{ top.total | number:'1.2-2' }} €</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm p-3 mb-3" [class.opacity-50]="loading">
+        <img *ngIf="data.chart_categories" [src]="'data:image/png;base64,' + data.chart_categories"
+          class="img-fluid" alt="Gràfic de barres amb el percentatge de despesa per categoria">
+      </div>
+
+      <div class="card shadow-sm p-3 mb-3" [class.opacity-50]="loading">
+        <img *ngIf="data.chart_monthly" [src]="'data:image/png;base64,' + data.chart_monthly"
+          class="img-fluid" alt="Gràfic de barres amb el total gastat per mes">
+      </div>
+
+      <div class="card shadow-sm p-3" [class.opacity-50]="loading">
+        <h5 class="mb-3">Detall per categoria</h5>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th class="text-end">Import</th>
+              <th class="text-end">% del total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of data.categories">
+              <td>{{ c.category }}</td>
+              <td class="text-end">{{ c.total | number:'1.2-2' }} €</td>
+              <td class="text-end">{{ c.pct | number:'1.1-1' }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <p class="text-muted small mt-3 mb-0">Gràfics generats al servidor amb Python (pandas + matplotlib).</p>
+</div>

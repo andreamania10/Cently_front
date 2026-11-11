@@ -1,11 +1,4 @@
-<nav class="navbar navbar-light bg-white border-bottom px-4 mb-4">
-  <span class="navbar-brand fw-bold text-warning-emphasis">💶 El meu pressupost</span>
-  <a routerLink="/historial" class="btn btn-outline-secondary btn-sm">Historial</a>
-  <div class="ms-auto d-flex align-items-center gap-3">
-    <span class="text-muted small" *ngIf="auth.getUser() as user">Hola, {{ user.name }}</span>
-    <button class="btn btn-outline-secondary btn-sm" (click)="logout()">Tancar sessió</button>
-  </div>
-</nav>
+<app-navbar />
 
 <div class="container" style="max-width: 700px;">
 
@@ -31,7 +24,10 @@
   <div class="card shadow-sm p-3 mb-3" *ngFor="let cat of categories">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <span class="fw-semibold">{{ cat.name }}</span>
-      <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(cat.id)">Eliminar</button>
+      <div class="d-flex gap-2">
+        <a [routerLink]="['/categories', cat.id, 'edit']" class="btn btn-sm btn-outline-secondary">Editar</a>
+        <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(cat)">Eliminar</button>
+      </div>
     </div>
 
     <p class="text-muted small mb-1">
@@ -70,7 +66,7 @@
         <span>{{ e.description }} — {{ e.date | date:'dd/MM/yyyy' }}</span>
         <span>
           {{ e.amount | number:'1.2-2' }} €
-          <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExpense(e.id)">✕</button>
+          <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExpense(e.id)" aria-label="Eliminar despesa">✕</button>
         </span>
       </li>
     </ul>

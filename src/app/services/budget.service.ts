@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Expense {
   id: number;
@@ -24,8 +25,23 @@ export interface HistoryEntry {
   total_spent: number;
 }
 
+export interface AnalyticsCategory {
+  category: string;
+  total: number;
+  pct: number;
+}
 
-const API_URL = 'http://localhost:3000/api';
+export interface AnalyticsResponse {
+  month: string;
+  months: string[];
+  total: number;
+  categories: AnalyticsCategory[];
+  monthly: { month: string; total: number }[];
+  chart_categories: string | null; // PNG en base64 generat amb Python
+  chart_monthly: string | null;
+}
+
+const API_URL = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root'
@@ -42,6 +58,10 @@ export class BudgetService {
     return this.http.post<Category>(`${API_URL}/categories`, { name, limit_amount });
   }
 
+  updateCategory(id: number, name: string, limit_amount: number): Observable<Category> {
+    return this.http.put<Category>(`${API_URL}/categories/${id}`, { name, limit_amount });
+  }
+
   deleteCategory(id: number): Observable<any> {
     return this.http.delete(`${API_URL}/categories/${id}`);
   }
@@ -56,5 +76,9 @@ export class BudgetService {
 
   getHistory(): Observable<HistoryEntry[]> {
     return this.http.get<HistoryEntry[]>(`${API_URL}/history`);
+  }
+
+  getAnalytics(month: string = 'all'): Observable<AnalyticsResponse> {
+    return this.http.get<AnalyticsResponse>(`${API_URL}/analytics`, { params: { month } });
   }
 }
