@@ -5,8 +5,7 @@ import { AnalyticsResponse, BudgetService } from '../../services/budget.service'
 import { ToastService } from '../../services/toast.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
 
-const MONTH_NAMES = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
-  'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
+import { monthLabel } from '../../utils/dates';
 
 @Component({
   selector: 'app-analytics',
@@ -49,8 +48,5 @@ export class AnalyticsComponent implements OnInit {
     return this.data?.categories[0] ?? null;
   }
 
-  monthLabel(month: string): string {
-    const [year, m] = month.split('-');
-    return `${MONTH_NAMES[Number(m) - 1]} ${year}`;
-  }
+  monthLabel = monthLabel;
 }

@@ -1,75 +1,220 @@
 <app-navbar />
 
-<div class="container" style="max-width: 700px;">
+<div class="container-fluid px-3 px-lg-4 pb-4 dashboard">
 
-  <div class="card shadow-sm p-3 mb-4">
-    <h5 class="mb-3">Nova categoria</h5>
-    <div class="row g-2">
-      <div class="col-6">
-        <input type="text" class="form-control" placeholder="Nom (ex: Alimentació)" [(ngModel)]="newCatName">
-      </div>
-      <div class="col-3">
-        <input type="number" class="form-control" placeholder="Límit €" [(ngModel)]="newCatLimit">
-      </div>
-      <div class="col-3">
-        <button class="btn btn-warning w-100" (click)="addCategory()">Afegir</button>
-      </div>
+  <!-- Rètol: saldo del mes (ingressos − despeses fins al dia del calendari) -->
+  <section class="retol mb-4" aria-label="Saldo del mes">
+    <div class="retol-text">
+      <p class="retol-hola mb-1">Hola{{ userName ? ', ' + userName : '' }}</p>
+
+      @if (incomes.length === 0) {
+        <h1 class="retol-xifra mb-1">Afegeix els teus ingressos</h1>
+        <p class="mb-0">Posa la nòmina o el que entri aquest mes i aquí veuràs quants diners et queden.</p>
+      } @else {
+        <h1 class="retol-xifra mb-1" [class.negatiu]="balance < 0">
+          @if (balance >= 0) {
+            {{ isToday ? 'Tens' : 'El ' + selectedDateLabel + ' tenies' }} {{ balance | number:'1.2-2' }} €
+          } @else {
+            {{ isToday ? 'Has gastat' : 'El ' + selectedDateLabel + ' havies gastat' }} {{ -balance | number:'1.2-2' }} € més del que has ingressat
+          }
+        </h1>
+        <p class="mb-0">
+          Ingressos {{ totalIncome | number:'1.2-2' }} € menys despeses {{ totalSpent | number:'1.2-2' }} €
+          <button type="button" class="btn btn-link btn-sm p-0 ms-2 align-baseline text-reset"
+            (click)="showIncomeList = !showIncomeList" [attr.aria-expanded]="showIncomeList">
+            {{ showIncomeList ? 'Amaga els ingressos' : 'Veure ingressos (' + visibleIncomes.length + ')' }}
+          </button>
+        </p>
+      }
     </div>
+
+    @if (!readOnly) {
+      <div class="retol-accions">
+        @if (!showIncomeForm) {
+          <button type="button" class="btn btn-dark" (click)="showIncomeForm = true">+ Afegir ingrés</button>
+        } @else {
+          <form class="retol-form" (ngSubmit)="addIncome()">
+            <input type="text" class="form-control form-control-sm" name="incomeDesc" placeholder="Nòmina, Bizum..."
+              [(ngModel)]="incomeDesc" aria-label="Descripció de l'ingrés">
+            <input type="number" class="form-control form-control-sm" name="incomeAmount" placeholder="€" min="0" step="0.01"
+              [(ngModel)]="incomeAmount" aria-label="Import de l'ingrés">
+            <button type="submit" class="btn btn-dark btn-sm text-nowrap">Afegir el {{ selectedDate | date:'dd/MM' }}</button>
+            <button type="button" class="btn btn-link btn-sm text-reset" (click)="showIncomeForm = false">Cancel·la</button>
+          </form>
+        }
+      </div>
+    }
+
+    @if (showIncomeList && incomes.length) {
+      <ul class="retol-llista list-unstyled mb-0">
+        @for (i of visibleIncomes; track i.id) {
+          <li>
+            <span>{{ i.description }} · {{ i.date | date:'dd/MM' }}</span>
+            <span class="text-nowrap">
+              +{{ i.amount | number:'1.2-2' }} €
+              @if (!readOnly) {
+                <button type="button" class="btn btn-sm btn-link text-reset p-0 ms-2" (click)="deleteIncome(i.id)"
+                  aria-label="Eliminar ingrés">✕</button>
+              }
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <div class="row g-4">
+
+    <!-- Esquerra: afegir -->
+    <aside class="col-md-6 col-xl-3">
+      <div class="sticky-xl">
+        <div class="card shadow-sm p-3 mb-4">
+          <h5 class="mb-3">Afegir despesa</h5>
+
+          @if (readOnly) {
+            <p class="small text-secondary mb-0">🔒 Aquest mes és d'un any anterior: només el pots consultar.</p>
+          } @else if (categories.length === 0) {
+            <p class="small text-muted mb-0">Primer crea una categoria a sota.</p>
+          } @else {
+            <form (ngSubmit)="addExpense()">
+              <label class="form-label small" for="expCat">Categoria</label>
+              <select id="expCat" class="form-select mb-2" name="expenseCategoryId" [(ngModel)]="expenseCategoryId">
+                @for (c of categories; track c.id) {
+                  <option [ngValue]="c.id">{{ c.name }}</option>
+                }
+              </select>
+
+              <label class="form-label small" for="expDesc">Descripció</label>
+              <input id="expDesc" type="text" class="form-control mb-2" name="expenseDesc" placeholder="Ex: Súper"
+                [(ngModel)]="expenseDesc">
+
+              <label class="form-label small" for="expAmount">Import (€)</label>
+              <input id="expAmount" type="number" class="form-control mb-3" name="expenseAmount" min="0" step="0.01"
+                [(ngModel)]="expenseAmount">
+
+              <button type="submit" class="btn btn-warning w-100">Afegir el {{ selectedDate | date:'dd/MM/yyyy' }}</button>
+              <p class="small text-muted mt-2 mb-0">Es guarda amb el dia marcat al calendari.</p>
+            </form>
+          }
+        </div>
+
+        <div class="card shadow-sm p-3">
+          <h5 class="mb-3">Nova categoria</h5>
+          <form (ngSubmit)="addCategory()">
+            <input type="text" class="form-control mb-2" name="newCatName" placeholder="Nom (ex: Alimentació)"
+              [(ngModel)]="newCatName" aria-label="Nom de la categoria">
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control" name="newCatLimit" placeholder="Límit €" min="0"
+                [(ngModel)]="newCatLimit" aria-label="Límit mensual en euros">
+              <button type="submit" class="btn btn-outline-dark">Crear</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Centre: categories, amb cerca i filtre -->
+    <main class="col-xl-6 order-last order-xl-0">
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <input type="search" class="form-control flex-grow-1 cerca" placeholder="Cerca per descripció o import (ex: súper, 43,20)"
+          [(ngModel)]="search" aria-label="Cerca despeses">
+        <select class="form-select filtre" [(ngModel)]="filterCategoryId" aria-label="Filtra per categoria">
+          <option [ngValue]="null">Totes les categories</option>
+          @for (c of categories; track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      @if (isFiltering) {
+        <p class="small text-muted mb-3">
+          {{ resultCount }} {{ resultCount === 1 ? 'despesa' : 'despeses' }} fins al {{ selectedDate | date:'dd/MM/yyyy' }}
+          <button type="button" class="btn btn-link btn-sm p-0 ms-2 align-baseline" (click)="clearFilters()">Treu els filtres</button>
+        </p>
+      }
+
+      @if (categories.length === 0) {
+        <p class="text-center text-muted">Encara no tens cap categoria. Crea'n una a l'esquerra.</p>
+      } @else if (listedCategories.length === 0) {
+        <p class="text-center text-muted">Cap despesa coincideix amb la cerca.</p>
+      }
+
+      <div class="row g-3">
+        @for (cat of listedCategories; track cat.id) {
+          <div class="col-lg-6 col-xl-12 col-xxl-6">
+            <div class="card shadow-sm p-3 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-2 gap-2">
+                <span class="fw-semibold">{{ cat.name }}</span>
+                <div class="d-flex gap-2">
+                  <a [routerLink]="['/categories', cat.id, 'edit']" class="btn btn-sm btn-outline-secondary">Editar</a>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(cat)">Eliminar</button>
+                </div>
+              </div>
+
+              <p class="text-muted small mb-1">
+                Gastat: {{ spent(cat) | number:'1.2-2' }} € de {{ cat.limit_amount | number:'1.2-2' }} €
+              </p>
+              <div class="progress mb-2" style="height: 10px;" role="progressbar"
+                [attr.aria-label]="'Gastat a ' + cat.name" [attr.aria-valuenow]="progressPct(cat)" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" [class.bg-danger]="remaining(cat) < 0" [class.bg-warning]="remaining(cat) >= 0"
+                  [style.width.%]="progressPct(cat)"></div>
+              </div>
+              <p class="fw-semibold mb-2" [class.text-danger]="remaining(cat) < 0" [class.text-success]="remaining(cat) >= 0">
+                @if (remaining(cat) >= 0) {
+                  {{ isToday ? 'Et queden' : 'Quedaven' }} {{ remaining(cat) | number:'1.2-2' }} €
+                } @else {
+                  Límit superat en {{ -remaining(cat) | number:'1.2-2' }} €
+                }
+              </p>
+
+              @if (listedExpenses(cat).length) {
+                <ul class="list-unstyled small text-muted mb-0">
+                  @for (e of listedExpenses(cat); track e.id) {
+                    <li class="d-flex justify-content-between border-bottom py-1 gap-2">
+                      <span>
+                        {{ e.description }} — {{ e.date | date:'dd/MM' }}
+                        @if (addedLater(e)) {
+                          <span class="badge text-bg-light border ms-1"
+                            [title]="'Apuntada el ' + (e.created_at | date:'dd/MM/yyyy')">apuntada més tard</span>
+                        }
+                      </span>
+                      <span class="text-nowrap">
+                        {{ e.amount | number:'1.2-2' }} €
+                        @if (!readOnly) {
+                          <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExpense(e.id)"
+                            aria-label="Eliminar despesa">✕</button>
+                        }
+                      </span>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </main>
+
+    <!-- Dreta: calendari -->
+    <aside class="col-md-6 col-xl-3 order-first order-md-0">
+      <div class="sticky-xl">
+        <div class="card shadow-sm p-3">
+          <app-month-calendar [month]="selectedMonth" [selectedDay]="selectedDay" [markedDays]="markedDays"
+            (monthChange)="onMonthChange($event)" (dayChange)="onDayChange($event)" />
+
+          <hr>
+          <p class="text-muted small mb-1">{{ isToday ? 'Avui' : 'Situació a' }}</p>
+          <p class="fw-semibold mb-2">{{ selectedDateLabel }}</p>
+          <p class="small mb-1">Gastat fins aquest dia: <strong>{{ totalSpent | number:'1.2-2' }} €</strong></p>
+          @if (totalLimit > 0) {
+            <p class="small text-muted mb-2">de {{ totalLimit | number:'1.2-2' }} € de límit entre totes les categories</p>
+          }
+          @if (!isToday) {
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="goToToday()">Torna a avui</button>
+          }
+        </div>
+      </div>
+    </aside>
+
   </div>
-
-  <p class="text-center text-muted" *ngIf="categories.length === 0">
-    Encara no tens cap categoria. Afegeix-ne una a dalt 👆
-  </p>
-
-  <div class="card shadow-sm p-3 mb-3" *ngFor="let cat of categories">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="fw-semibold">{{ cat.name }}</span>
-      <div class="d-flex gap-2">
-        <a [routerLink]="['/categories', cat.id, 'edit']" class="btn btn-sm btn-outline-secondary">Editar</a>
-        <button class="btn btn-sm btn-outline-danger" (click)="deleteCategory(cat)">Eliminar</button>
-      </div>
-    </div>
-
-    <p class="text-muted small mb-1">
-      Gastat: {{ spent(cat) | number:'1.2-2' }} € de {{ cat.limit_amount | number:'1.2-2' }} €
-    </p>
-
-    <div class="progress mb-2" style="height: 10px;">
-      <div class="progress-bar" [class.bg-danger]="remaining(cat) < 0" [class.bg-warning]="remaining(cat) >= 0"
-        [style.width.%]="progressPct(cat)"></div>
-    </div>
-
-    <p class="fw-semibold mb-3" [class.text-danger]="remaining(cat) < 0" [class.text-success]="remaining(cat) >= 0">
-      <ng-container *ngIf="remaining(cat) >= 0; else overBudget">
-        Et queden {{ remaining(cat) | number:'1.2-2' }} €
-      </ng-container>
-      <ng-template #overBudget>
-        Has superat el límit en {{ -remaining(cat) | number:'1.2-2' }} €
-      </ng-template>
-    </p>
-
-    <div class="row g-2 mb-2">
-      <div class="col-5">
-        <input type="text" class="form-control form-control-sm" placeholder="Descripció"
-          [(ngModel)]="expenseDesc[cat.id]">
-      </div>
-      <div class="col-3">
-        <input type="number" class="form-control form-control-sm" placeholder="€" [(ngModel)]="expenseAmount[cat.id]">
-      </div>
-      <div class="col-4">
-        <button class="btn btn-sm btn-warning w-100" (click)="addExpense(cat.id)">Afegir despesa</button>
-      </div>
-    </div>
-
-    <ul class="list-unstyled small text-muted mb-0" *ngIf="cat.expenses.length">
-      <li class="d-flex justify-content-between border-bottom py-1" *ngFor="let e of cat.expenses">
-        <span>{{ e.description }} — {{ e.date | date:'dd/MM/yyyy' }}</span>
-        <span>
-          {{ e.amount | number:'1.2-2' }} €
-          <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExpense(e.id)" aria-label="Eliminar despesa">✕</button>
-        </span>
-      </li>
-    </ul>
-  </div>
-
 </div>

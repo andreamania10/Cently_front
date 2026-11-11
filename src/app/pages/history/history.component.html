@@ -1,12 +1,14 @@
 <app-navbar />
 
 <div class="container pb-4" style="max-width: 700px;">
-  <h3 class="mb-4">📊 Historial</h3>
+  <a routerLink="/historial/anys" class="btn btn-sm btn-outline-secondary mb-3">← Mira anys anteriors</a>
+
+  <h3 class="mb-4">📊 Historial {{ year }}</h3>
 
   <p class="text-muted" *ngIf="loading">Carregant...</p>
 
   <p class="text-muted" *ngIf="!loading && months.length === 0">
-    Encara no hi ha despeses registrades.
+    Encara no hi ha despeses registrades aquest any.
   </p>
 
   <div class="card shadow-sm p-3 mb-3" *ngFor="let month of months">

@@ -1,0 +1,74 @@
+.dashboard {
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+/* Rètol: el saldo del mes, l'element principal de la home */
+.retol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 1rem;
+  background: var(--bs-warning);
+  color: #1f1a00;
+}
+
+.retol-hola {
+  font-size: 1.05rem;
+}
+
+.retol-xifra {
+  font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+
+  &.negatiu {
+    color: #8a1c12;
+  }
+}
+
+.retol-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+
+  input[type="text"] { width: 11rem; }
+  input[type="number"] { width: 7rem; }
+}
+
+.retol-llista {
+  flex-basis: 100%;
+  border-top: 1px solid rgba(0, 0, 0, .15);
+  padding-top: .75rem;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .2rem 0;
+    max-width: 32rem;
+  }
+}
+
+.filtre {
+  width: auto;
+  min-width: 12rem;
+}
+
+.cerca {
+  width: auto;          /* .form-control posa width: 100% i empenyia el filtre a una altra línia */
+  flex: 1 1 14rem;
+}
+
+/* A escriptori, les columnes laterals es queden fixes mentre es fa scroll de la llista */
+@media (min-width: 1200px) {
+  .sticky-xl {
+    position: sticky;
+    top: 1rem;
+  }
+}

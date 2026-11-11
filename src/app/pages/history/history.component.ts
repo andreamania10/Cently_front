@@ -1,28 +1,29 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { BudgetService, HistoryEntry } from '../../services/budget.service';
 import { ToastService } from '../../services/toast.service';
 import { NavbarComponent } from '../../components/navbar/navbar.component';
-
-const MONTH_NAMES = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny',
-  'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
+import { currentYear, monthLabel } from '../../utils/dates';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, NavbarComponent],
+  imports: [CommonModule, RouterLink, NavbarComponent],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
 })
 export class HistoryComponent implements OnInit {
+  readonly year = currentYear(); // els anys anteriors són a /historial/anys
   entries: HistoryEntry[] = [];
   months: string[] = [];
   loading = true;
+  monthLabel = monthLabel;
 
   constructor(private budget: BudgetService, private toast: ToastService) { }
 
   ngOnInit(): void {
-    this.budget.getHistory().subscribe({
+    this.budget.getHistory(this.year).subscribe({
       next: data => {
         this.entries = data;
         this.months = [...new Set(data.map(e => e.month))];
@@ -41,11 +42,5 @@ export class HistoryComponent implements OnInit {
 
   totalForMonth(month: string): number {
     return this.entriesForMonth(month).reduce((sum, e) => sum + Number(e.total_spent), 0);
-  }
-
-  /** '2026-11' → 'Novembre 2026' */
-  monthLabel(month: string): string {
-    const [year, m] = month.split('-');
-    return `${MONTH_NAMES[Number(m) - 1]} ${year}`;
   }
 }

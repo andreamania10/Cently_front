@@ -1,0 +1,96 @@
+<app-navbar />
+
+<div class="container pb-4" style="max-width: 820px;">
+  <a routerLink="/historial" class="btn btn-sm btn-outline-secondary mb-3">← Tornar a l'historial</a>
+
+  <h3 class="mb-3">🗂️ Informes per anys</h3>
+
+  <!-- Un any per pestanya, des del 2026 -->
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" *ngFor="let y of years">
+      <button type="button" class="nav-link" role="tab" [class.active]="y === selectedYear"
+        [attr.aria-selected]="y === selectedYear" (click)="selectYear(y)">
+        {{ y }}
+        <span class="text-muted small" *ngIf="y === thisYear"> (en curs)</span>
+      </button>
+    </li>
+  </ul>
+
+  <p class="small text-muted" *ngIf="!hasPreviousYears">
+    Cently es va crear el {{ thisYear }}, així que encara no hi ha anys anteriors. Quan acabi l'any,
+    el {{ thisYear }} apareixerà aquí com a informe tancat (només de lectura).
+  </p>
+
+  <p class="small text-secondary" *ngIf="selectedYear < thisYear">
+    🔒 Any tancat: només es pot consultar.
+  </p>
+
+  <p class="text-muted" *ngIf="loading">Carregant l'informe...</p>
+
+  <ng-container *ngIf="!loading">
+    <p class="text-muted" *ngIf="monthTotals.length === 0">No hi ha despeses el {{ selectedYear }}.</p>
+
+    <ng-container *ngIf="monthTotals.length > 0">
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <div class="card shadow-sm p-3 h-100">
+            <span class="text-muted small">Total gastat el {{ selectedYear }}</span>
+            <span class="fs-3 fw-semibold">{{ yearTotal | number:'1.2-2' }} €</span>
+          </div>
+        </div>
+        <div class="col-sm-6" *ngIf="report?.categories?.[0] as top">
+          <div class="card shadow-sm p-3 h-100">
+            <span class="text-muted small">On es va gastar més</span>
+            <span class="fs-3 fw-semibold">{{ top.category }}</span>
+            <span class="text-muted small">{{ top.pct | number:'1.1-1' }}% del total de l'any</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm p-3 mb-3" *ngIf="report?.chart_categories">
+        <img [src]="'data:image/png;base64,' + report!.chart_categories" class="img-fluid"
+          [alt]="'Percentatge de despesa per categoria el ' + selectedYear">
+      </div>
+
+      <div class="card shadow-sm p-3 mb-3">
+        <h5 class="mb-3">Mes a mes</h5>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              <th class="text-end">Gastat</th>
+              <th class="text-end">Límit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of monthTotals">
+              <td>{{ monthLabel(m.month) }}</td>
+              <td class="text-end" [class.text-danger]="m.total > m.limit">{{ m.total | number:'1.2-2' }} €</td>
+              <td class="text-end text-muted">{{ m.limit | number:'1.2-2' }} €</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card shadow-sm p-3" *ngIf="report?.categories?.length">
+        <h5 class="mb-3">Per categoria</h5>
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th class="text-end">Import</th>
+              <th class="text-end">% de l'any</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of report!.categories">
+              <td>{{ c.category }}</td>
+              <td class="text-end">{{ c.total | number:'1.2-2' }} €</td>
+              <td class="text-end">{{ c.pct | number:'1.1-1' }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
